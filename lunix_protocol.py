@@ -1,5 +1,3 @@
-import time
-
 MAX_PACKET_LEN  = 300
 PACKET_SIGNATURE_OFFSET = 4
 NODE_OFFSET = 9
@@ -25,7 +23,6 @@ class LunixStateMachine:
 		self.packet = [0]*MAX_PACKET_LEN
 
 		self.sensors = {}
-		self.last_update = None
 	
 	def set_state(self, state, btr, br):
 		self.state = state
@@ -127,5 +124,4 @@ class LunixStateMachine:
 		light = uint16_from_packet(self.packet[LIGHT_OFFSET])
 
 		self.sensors[nodeid] = {"battery": batt, "temp": temp, "light": light}
-		self.last_update = time.time()
 

@@ -15,6 +15,8 @@ SEEKING_PAYLOAD                = 7
 SEEKING_CRC                    = 8
 SEEKING_END_BYTE               = 9
 
+LUNIX_SENSOR_CNT = 2;
+
 class LunixStateMachine:
 	def __init__(self):
 		self.pos = 0
@@ -107,21 +109,23 @@ class LunixStateMachine:
 
 		if self.state == SEEKING_END_BYTE:
 			if self.parse_state(buf, i, 0) == 1:
-				update_sensors()
+				self.update_sensors()
 				self.pos = 0
 				self.next_is_special = 0
 				self.set_state(SEEKING_START_BYTE, 1, 0)
 
 		return 0
 
+	@staticmethod
 	def uint16_from_packet(buf, offset):
 		return int.from_bytes(buf[offset:offset+2], byteorder='little', signed=False)
 
 	def update_sensors(self):
-		nodeid = uint16_from_packet(self.packet[NODE_OFFSET])
-		batt = uint16_from_packet(self.packet[VREF_OFFSET])
-		temp = uint16_from_packet(self.packet[TEMPERATURE_OFFSET])
-		light = uint16_from_packet(self.packet[LIGHT_OFFSET])
+		nodeid = self.uint16_from_packet(self.packet, NODE_OFFSET)
+		if 0<=nodeid<LUNIX_SENSOR_CNT:
+			batt = self.uint16_from_packet(self.packet, VREF_OFFSET)
+			temp = self.uint16_from_packet(self.packet, TEMPERATURE_OFFSET)
+			light = self.uint16_from_packet(self.packet, LIGHT_OFFSET)
 
-		self.sensors[nodeid] = {"battery": batt, "temp": temp, "light": light}
+			self.sensors[nodeid] = {"battery": batt, "temp": temp, "light": light}
 

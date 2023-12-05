@@ -14,6 +14,7 @@ def poll_alive(status):
         if status.sensors is None: status.reason = reason
         else: status.reason = None
 
+    status.last_update = None
     while True:
         lunix = LunixStateMachine()
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -26,13 +27,12 @@ def poll_alive(status):
                 update_status(None)
             
             try:
-                while len(lunix.sensors) == 0:
+                while True:
                     data = s.recv(RECV_SIZE)
                     if len(data) == 0:
                         update_status(sensors, "reset")
                         break
                     lunix.receive(data)
-                else:
                     update_status(lunix.sensors)
             except TimeoutError:
                 update_status(None, "nodata")

@@ -1,5 +1,7 @@
-from flask import Flask, current_app
+from flask import Flask, current_app, render_template
 from poll import start_poll
+import time
+import datetime
 
 def create_app():
 	app = Flask(__name__)
@@ -8,14 +10,18 @@ def create_app():
 	return app
 app = create_app()
 
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.date.today().year}
+
 @app.get('/')
 def main():
-	if current_app.status.last_update is None:
-		return {"status": "Initializing..."}
-	if current_app.status.sensors is None:
-		return {"status": "down", "last_update": current_app.status.last_update, "reason": current_app.status.reason}
-	return {"status": "up", "last_update": current_app.status.last_update, "sensors": current_app.status.sensors}
+	if current_app.status.current == "reconnect":
+		return render_template('reconnect.html')
+	if current_app.status.current == "down":
+		return render_template('down.html', status=current_app.status, current_time=time.time())
 
+	return render_template('up.html', status=current_app.status, current_time=time.time())
 
 
 if __name__ == "__main__":

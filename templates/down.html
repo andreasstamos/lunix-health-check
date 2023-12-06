@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Status: <span class="text-danger">DOWN</span> for {{ (current_time - status.last_update) | round | int }} seconds </h2>
+<i style="font-size: 7rem" class="bi bi-heart-pulse-fill text-danger"></i>
+{% if status.reason == "nodata" %}
+<h3>Reason: Connection succeeds, but remote does not send any data.</h3>
+{% elif status.reason == "timeout" %}
+<h3>Reason: Could not connect to remote. Connection timed out.</h3>
+{% elif status.reason == "reset" %}
+<h3>Reason: TCP connection unexpectedly closed/resetted by remote.</h3>
+{% endif %}
+
+{% endblock %}

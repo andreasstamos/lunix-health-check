@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<i style="font-size: 7rem" class="bi bi-heart-pulse-fill text-success"></i>
+<h2>Status: <span class="text-success">UP</span> for {{ (current_time - status.last_update) | round | int }} seconds </h2>
+<hr>
+<h3>Sensors</h3>
+{% if status.sensors | length == 0 %}
+<h4> No data received yet </h4>
+{% else %}
+{% for nodeid, sensor in status.sensors.items() %}
+<hr>
+<h4>Sensor {{ nodeid }}</h4>
+<p>Updated before {{ (current_time - sensor["last_update"]) | round | int }} seconds</p>
+<p>Battery: {{ '%.3f' | format(sensor["battery"]) }}</p>
+<p>Temperature: {{ '%.3f' | format(sensor["temp"]) }}</p>
+<p>Light: {{ '%.3f' | format(sensor["light"]) }}</p>
+{% endfor %}
+{% endif %}
+
+{% endblock %}
+

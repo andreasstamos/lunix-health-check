@@ -1,3 +1,6 @@
+from math import log
+import time
+
 MAX_PACKET_LEN  = 300
 PACKET_SIGNATURE_OFFSET = 4
 NODE_OFFSET = 9
@@ -123,9 +126,34 @@ class LunixStateMachine:
 	def update_sensors(self):
 		nodeid = self.uint16_from_packet(self.packet, NODE_OFFSET)
 		if 0<=nodeid<LUNIX_SENSOR_CNT:
-			batt = self.uint16_from_packet(self.packet, VREF_OFFSET)
-			temp = self.uint16_from_packet(self.packet, TEMPERATURE_OFFSET)
-			light = self.uint16_from_packet(self.packet, LIGHT_OFFSET)
+			batt = self.uint16_to_batt(self.uint16_from_packet(self.packet, VREF_OFFSET))
+			temp = self.uint16_to_temp(self.uint16_from_packet(self.packet, TEMPERATURE_OFFSET))
+			light = self.uint16_to_light(self.uint16_from_packet(self.packet, LIGHT_OFFSET))
 
-			self.sensors[nodeid] = {"battery": batt, "temp": temp, "light": light}
+			self.sensors[nodeid] = {"battery": batt, "temp": temp, "light": light, "last_update": time.time()}
 
+	@staticmethod
+	def uint16_to_batt(value):
+		if value != 0:
+			return 1.223 * (1023.0 / value)
+		else: return -0
+
+	@staticmethod
+	def uint16_to_light(value):
+		return value * 5000.0 / 65535
+
+	@staticmethod
+	def uint16_to_temp(value):
+		R1 = 10000.0
+		ADC_FS = 1023.0
+
+		a = 0.001010024
+		b = 0.000242127
+		c = 0.000000146
+		
+		Rth = (R1 * (ADC_FS - value)) / value
+		Kelvin_Inv = a + b * log(Rth) + c * log(Rth)**3
+
+		res = (1.0 / Kelvin_Inv) - 272.15
+		
+		return -272.15 if res < -272.15 else res

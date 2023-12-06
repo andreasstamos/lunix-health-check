@@ -25,7 +25,7 @@ class LunixStateMachine:
 		self.pos = 0
 		self.next_is_special = 0
 		self.set_state(SEEKING_START_BYTE, 1, 0)
-		self.packet = [0]*MAX_PACKET_LEN
+		self.packet = bytearray(MAX_PACKET_LEN)
 
 		self.sensors = {}
 	
